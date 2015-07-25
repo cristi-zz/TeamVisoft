@@ -1,6 +1,12 @@
 __author__ = 'Amalia'
 
 # read config file to get path of dataset
+import pandas as pd
+import matplotlib.pyplot as plt
+import datetime as df
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 from enum import Enum
 class Dataset(Enum):
@@ -24,5 +30,7 @@ def getTrainPath():
 
 if __name__ == "__main__":
     print getSamplePath()
-    print getTrainPath()
-    print getTestPath()
+
+    mapdata = np.loadtxt("../sf_map_copyright_openstreetmap_contributors.txt")
+    plt.imshow(mapdata, cmap = plt.get_cmap('gray'))
+    plt.savefig('SF-map.png')

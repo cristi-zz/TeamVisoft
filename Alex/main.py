@@ -4,6 +4,9 @@ __author__ = 'Amalia'
 import pandas as pd
 import matplotlib.pyplot as plt
 import datetime as df
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 from enum import Enum
 class Dataset(Enum):
@@ -27,16 +30,7 @@ def getTrainPath():
 
 if __name__ == "__main__":
     print getSamplePath()
-    print getTrainPath()
-    print getTestPath()
 
-    train = pd.read_csv(getTrainPath(), parse_dates=['Dates'])
-    train['DayOfYear'] = train['Dates'].map(lambda x: x.strftime("%m-%d"))
-    df = train[['Category','DayOfYear']].groupby(['DayOfYear']).count()
-    df.plot(y='Category', label='Number of events', figsize=(15,10))
-    plt.title("Crimes occur with a regular pattern: two peaks per month")
-    plt.ylabel('Number of crimes')
-    plt.xlabel('Day of year')
-    plt.grid(True)
-
-    plt.savefig('Distribution_of_Crimes_by_DayofYear.png')
+    mapdata = np.loadtxt("../sf_map_copyright_openstreetmap_contributors.txt")
+    plt.imshow(mapdata, cmap = plt.get_cmap('gray'))
+    plt.savefig('SF-map.png')
