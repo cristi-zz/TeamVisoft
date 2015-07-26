@@ -2,6 +2,11 @@
 
 First steps to set up your env and run the scripts
 
+### Tools (Not carved in stone) ###
+* Anaconda as python distribution
+* Git extensions
+* PyCharm as IDE
+
 ### How do I get set up? ###
 
 * Install anaconda distribution
