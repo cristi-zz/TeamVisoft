@@ -7,11 +7,12 @@ First steps to set up your env and run the scripts
 * Install anaconda distribution
 * Edit paths, reboot, etc. so that the python gets executed from anaconda distribution
 * Run:
-    
+```
     conda update -f conda
     conda install scikit-learn
     conda install pandas
     conda install pytest
+```
 
 * Database configuration
 * How to run tests
