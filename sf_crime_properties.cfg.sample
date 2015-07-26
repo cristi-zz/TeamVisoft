@@ -1,0 +1,5 @@
+[Properties]
+#Save this file in your HOME directory and edit the paths.
+#Make sure out_dir is writable
+source_dir=D:\ML\data
+out_dir=D:\ML\data
