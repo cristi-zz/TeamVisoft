@@ -13,7 +13,8 @@ First steps to set up your env and run the scripts
     conda install pandas
     conda install pytest
 ```
-
+* Upload SSH keys to bitbucket (if not already there)
+* Clone the repo
 
 
 ### What is this repository for? ###
