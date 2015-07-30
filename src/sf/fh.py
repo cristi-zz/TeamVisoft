@@ -11,6 +11,10 @@ DEFAULT_CONFIG_FILE_NAME='sf_crime_properties.cfg'
 SOURCE_DIR_NAME='source_dir'
 OUTPUT_DIR_NAME='out_dir'
 
+#TODO to be moved in data generation
+TRAIN_FILE_NAME = 'train.csv'
+TEST_FILE_NAME = 'test.csv'
+
 #TODO add here more constants with the file names (ex. training data, test data, generated data by us, etc)
 
 

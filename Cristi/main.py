@@ -1,36 +1,34 @@
-__author__ = 'Amalia'
+__author__ = 'Cristi'
 
 # read config file to get path of dataset
+import sf.fh as fh
 import pandas as pd
-import matplotlib.pyplot as plt
-import datetime as df
-import numpy as np
-import matplotlib.pyplot as plt
+import sf.basic as basic
+import sklearn.naive_bayes as bayes
 
-
-from enum import Enum
-class Dataset(Enum):
-    sample = 'sample'
-    train = 'train'
-    test = 'test'
-
-def getPath(dataset):
-    import ConfigParser
-    config = ConfigParser.ConfigParser()
-    config.read('properties.cfg')
-    path = config.get("Properties", dataset.value)
-    return path
-
-def getSamplePath():
-    return getPath(Dataset.sample)
-def getTestPath():
-    return getPath(Dataset.test)
-def getTrainPath():
-    return getPath(Dataset.train)
+#Mainly taken from kaggle scripts
 
 if __name__ == "__main__":
-    print getSamplePath()
+    #This is how you get the file name
+    train_file_name = fh.get_src_path(fh.TRAIN_FILE_NAME)
+    train_set = pd.read_csv(train_file_name)
+    test_file_name =fh.get_src_path(fh.TEST_FILE_NAME)
+    test_set = pd.read_csv(test_file_name)
 
-    mapdata = np.loadtxt("../sf_map_copyright_openstreetmap_contributors.txt")
-    plt.imshow(mapdata, cmap = plt.get_cmap('gray'))
-    plt.savefig('SF-map.png')
+    X,Y = basic.get_X_Y_from_dataframe(train_set)
+    T = basic.get_X_from_dataframe(test_set)
+    Id = basic.get_Id_from_test_dataframe(test_set)
+
+
+    #Get a classifier. Later, it will be a pipeline
+    pipeline = bayes.GaussianNB()
+    pipeline.fit(X,Y)
+
+    predicted = pipeline.predict_proba(T)
+    classes = pipeline.classes_
+    print "Done"
+
+
+
+
+
