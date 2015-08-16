@@ -1,6 +1,8 @@
 # README #
 
-First steps to set up your env and run the scripts. Please edit this document as new knowledge is gathered
+First steps to set up your env and run the scripts. Please edit this document as new knowledge is gathered.
+
+The project was moved to github. 
 
 ### Tools (Not carved in stone) ###
 * Anaconda as python distribution
