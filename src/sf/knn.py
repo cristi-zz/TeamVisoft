@@ -6,11 +6,8 @@ import collections
 #distance between p1 and p2
 def getDistance( p1, p2 ):
  sum = 0
- if isinstance(p2, list):
-     for index in range(0, len(p2)):
-         sum += (p2[index] - p1[index]) ** 2
- else:
-     sum += (p2 - p1) ** 2
+ for index in range(0, len(p2)):
+     sum += (p2[index] - p1[index]) ** 2
  return math.sqrt(sum)
 
 class KNeighborsClassifier():
@@ -49,10 +46,8 @@ class KNeighborsClassifier():
     #returns the predicted values list for the transmitted value
     def predict(self, val):
         predicted = []
-        print val
         for elem in val:
             distances, indices = self.kneighbors(elem)
-
             #used to store the frequency of each target value found in neighbors
             #collections - used in order to keep the data structure ordered
             frequencies = collections.OrderedDict()
