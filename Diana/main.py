@@ -23,6 +23,7 @@ t1 = time.time()
 neigh.fit(X, y)
 print(neigh.predict(x_test))
 print "Sklearn knn: %.2f" % (time.time() - t1)
+print neigh.predict_proba(x_test)
 
 #custom knn
 classifier = pipe.Pipeline([
@@ -32,3 +33,21 @@ t1 = time.time()
 classifier.fit(X, y)
 print classifier.predict(x_test)
 print "Custom knn: %.2f" % (time.time() - t1)
+
+#another set of data 
+X = [[0], [1], [2], [3]]
+y = [1, 2, 0, 0]
+neigh = ngh.KNeighborsClassifier(n_neighbors=3)
+neigh.fit(X, y)
+
+print(neigh.predict([[2], [1.1]]))
+print(neigh.predict_proba([[2], [1.1]]))
+
+print "Custom"
+
+classifier = pipe.Pipeline([
+    ('clf', knn.KNeighborsClassifier(n_neighbors=3))
+])
+classifier.fit(X, y)
+print classifier.predict([[2], [1.1]])
+print classifier.predict_proba([[2], [1.1]])
