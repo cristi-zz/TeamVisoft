@@ -15,6 +15,17 @@ __all__ = ['Job','get_random_search_cv_job_list','run_jobs_serial','accumulate_r
 
 
 class Job:
+    """
+    Class that holds details about a job that has to be run.
+    Run it on some remote worker or another thread.
+    Once the job is run, a Result object is returned that can be passed back
+
+    A job is identified by a token formed by:
+    tok_id: passed as is to the result,
+    iteration_no: have the same meaning as RandomizedSearch. That is, the metaparameter set number that is curently tested
+    fold_no: the CV fold that is currently fitted and predicted. For each meta set you run a CV loop.
+    In the results, all three numbers are packed into a tuple
+    """
     def __init__(self, tok_id, iteration_no, fold_no, estimator, scorer, meta_parameter_set, eval_on_training,
                  train_index, test_index,
                  verbose
@@ -45,6 +56,10 @@ class Job:
 
 
     def run(self,X, Y):
+        """
+        Lengthly and compute intensive part.
+        Returns a Result object
+        """
         train_score, test_score, n_test_samples, scoring_time = _fit_and_score(self.estimator, X, Y, self.scorer,
                                                                                        self.train_index, self.test_index,
                                                                                        self.verbose,
@@ -58,6 +73,9 @@ class Job:
 
 
 class Result:
+    """
+    Keeps the results of a job. The token packs all the information passed in the job (tok_id, iteration_no, fold_no)
+    """
     def __init__(self,token,train_score,test_score,scoring_time,meta_parameter_set):
         self.token = token
         self.train_score = train_score
@@ -95,6 +113,17 @@ def get_random_search_cv_job_list(estimator,scorer,cv_generator,eval_on_training
 
 
 def run_jobs_serial(jobs,X,Y):
+    """
+    Just takes each job and runs it. Mainly for testing purposes.
+    Returns a list of results.
+
+    This behavior must be kept by other implementations too
+
+    :param jobs:
+    :param X:
+    :param Y:
+    :return:
+    """
     results = list()
     for job in jobs:
         r = job.run(X,Y)
@@ -104,6 +133,10 @@ def run_jobs_serial(jobs,X,Y):
 
 def accumulate_results(results):
     """
+    Aggregate the results and for each tok_id find the best metaparameter set (the best iteration_no)
+    All performance metrics are supposed to be "greater is better" and for those that are "less is better" the sklearn negates the results.
+    So for log_loss, you get a negative result.
+
     :param results:
     :return: dictionary with tokens as keys tuple values containing in order train, test performances, total time and meta parameter set
     """

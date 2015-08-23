@@ -1,4 +1,12 @@
 __author__ = 'visoft'
+"""
+Example on how to build, run and analyse a random search job list.
+
+The scorer and CV generator can be replaced with different options.
+
+For SF data, you want to use something like train/test splitting, randomized at first, and then, one week at a time
+
+"""
 
 import sklearn.metrics as metrics
 import sklearn.cross_validation as cross_validation
