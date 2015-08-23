@@ -11,6 +11,9 @@ from sklearn.cross_validation import _fit_and_score
 from sklearn.grid_search import ParameterSampler
 from operator import attrgetter,itemgetter
 
+__all__ = ['Job','get_random_search_cv_job_list','run_jobs_serial','accumulate_results']
+
+
 class Job:
     def __init__(self, tok_id, iteration_no, fold_no, estimator, scorer, meta_parameter_set, eval_on_training,
                  train_index, test_index,
@@ -42,18 +45,25 @@ class Job:
 
 
     def run(self,X, Y):
-        train_score, test_score, n_test_samples, scoring_time, params = _fit_and_score(self.estimator, X, Y, self.scorer,
+        train_score, test_score, n_test_samples, scoring_time = _fit_and_score(self.estimator, X, Y, self.scorer,
                                                                                        self.train_index, self.test_index,
                                                                                        self.verbose,
                                                                                        self.meta_parameter_set,
-                                                                                       None, self.eval_on_training)
-        self.train_score = train_score
-        self.test_score = test_score
-        self.scoring_time = scoring_time
+                                                                                               None, self.eval_on_training)
+        return Result(self.get_unique_token(),train_score,test_score,scoring_time,self.meta_parameter_set)
 
     def get_unique_token(self):
         return (self.tok_id, self.iteration_no, self.fold_no)
 
+
+
+class Result:
+    def __init__(self,token,train_score,test_score,scoring_time,meta_parameter_set):
+        self.token = token
+        self.train_score = train_score
+        self.test_score = test_score
+        self.scoring_time = scoring_time
+        self.meta_parameter_set = meta_parameter_set
 
 
 def get_random_search_cv_job_list(estimator,scorer,cv_generator,eval_on_training,meta_parameter_dist,no_samples,token,verbose=True):
@@ -76,8 +86,8 @@ def get_random_search_cv_job_list(estimator,scorer,cv_generator,eval_on_training
     meta_param_list = list(ParameterSampler(meta_parameter_dist,no_samples))
     train_test_pairs = list(cv_generator)
     jobs = list()
-    for i in range(meta_param_list):
-        for j in range(train_test_pairs):
+    for i in range(len(meta_param_list)):
+        for j in range(len(train_test_pairs)):
             train,test = train_test_pairs[j]
             job = Job(token,i,j,estimator,scorer,meta_param_list[i],eval_on_training,train,test,verbose)
             jobs.append(job)
@@ -85,41 +95,39 @@ def get_random_search_cv_job_list(estimator,scorer,cv_generator,eval_on_training
 
 
 def run_jobs_serial(jobs,X,Y):
+    results = list()
     for job in jobs:
-        job.run(X,Y)
+        r = job.run(X,Y)
+        results.append(r)
+    return results
 
 
-def accumulate_results(jobs, is_loss=False):
+def accumulate_results(results):
     """
-
-    :param jobs:
-    :param is_loss: if True, will return the parameter set that minimizes the test performance
+    :param results:
     :return: dictionary with tokens as keys tuple values containing in order train, test performances, total time and meta parameter set
     """
     #Get an unique set of tokens
-    tokens = set(map(lambda job:job.tok_id,jobs))
-    result = {}
+    tokens = set(map(lambda r:r.token[0],results))
+    aggregation = {}
     for token in tokens:
         #filter only those jobs having the right token
-        job_list = filter(lambda job:job.tok_id == token, jobs)
+        result_list = filter(lambda r:r.token[0] == token, results)
         #find unique iteration numbers (each iteration have one meta parameter)
-        iterations = set(map(lambda job:job.iteration_no), job_list)
+        iterations = set(map(lambda r:r.token[1], result_list))
         performances = list()
         for iteration in iterations:
-            jobs_one_cv_loop = filter(lambda job:job.iteration_no == iteration, job_list)
+            results_one_cv_loop = filter(lambda r:r.token[1] == iteration, result_list)
             train_perf = 0
             test_perf = 0
             total_time = 0
-            for job in jobs_one_cv_loop:
+            for job in results_one_cv_loop:
                 train_perf += job.train_score
                 test_perf += job.test_score
                 total_time += job.scoring_time
-            job = jobs_one_cv_loop[0]
-            performances.append((train_perf,test_perf,total_time,job.meta_parameter_set))
-        #Get the best iteration
-        if is_loss:
-            bp = min(performances,itemgetter(1))
-        else:
-            bp = max(performances,itemgetter(1))
-        result[token] = bp
-    return result
+            count = len(results_one_cv_loop)
+            result = results_one_cv_loop[0]
+            performances.append((train_perf/count,test_perf/count,total_time,result.meta_parameter_set))
+        bp = max(performances,key = lambda p:p[1])
+        aggregation[token] = bp
+    return aggregation
