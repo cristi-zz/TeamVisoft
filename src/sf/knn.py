@@ -5,7 +5,7 @@ import collections
 import numpy as np
 
 #distance between p1 and p2
-def getDistance( p1, p2 ):
+def get_distance( p1, p2 ):
  sum = 0
  for index in range(0, len(p2)):
      sum += (p2[index] - p1[index]) ** 2
@@ -32,7 +32,7 @@ class KNeighborsClassifier():
     def distances(self, val):
         dist = []
         for elem in self.x :
-            dist.append(getDistance(elem, val))
+            dist.append(get_distance(elem, val))
         return dist
 
     #returns the distances and the corresponding indexes
@@ -49,14 +49,14 @@ class KNeighborsClassifier():
         predicted = []
         for elem in val:
             distances, indices = self.kneighbors(elem)
-            frequencies = self.getFrequenciesOfTargetValues(indices)
+            frequencies = self.get_frequencies_of_target_values(indices)
             #sort target values by frequency
             frequencies = sorted(frequencies.items(), key=lambda x: x[1])
             #add most frequent target value to the result
             predicted.append(frequencies[-1][0])
         return np.array(predicted)
 
-    def getFrequenciesOfTargetValues(self, indices):
+    def get_frequencies_of_target_values(self, indices):
         #used to store the frequency of each target value found in neighbors
         #collections - used in order to keep the data structure ordered
         frequencies = collections.OrderedDict()
@@ -74,7 +74,7 @@ class KNeighborsClassifier():
         for elem in val:
             predict_proba_aux = []
             distances, indices = self.kneighbors(elem)
-            frequencies = self.getFrequenciesOfTargetValues(indices)
+            frequencies = self.get_frequencies_of_target_values(indices)
             for target_value in target_values:
                 found = 0
                 for value in frequencies.items():
