@@ -1,4 +1,5 @@
 from collections import namedtuple
+from copy import deepcopy
 from operator import itemgetter
 from pprint import pformat
 
@@ -8,7 +9,7 @@ import collections
 import pprint
 import operator
 
-class Node(namedtuple('Node', 'root left right')):
+class Node(namedtuple('Node', 'root index left right')):
     def __repr__(self):
         return pformat(tuple(self))
 
@@ -19,7 +20,9 @@ class KdTree():
         self.points = points_list
 
     def build_tree(self):
-        tree = self.kd_tree(self.points, 0)
+        #used to keep initial points indexes
+        points = deepcopy(self.points)
+        tree = self.kd_tree(points, 0)
         return tree
 
     def kd_tree(self, points, depth):
@@ -37,6 +40,7 @@ class KdTree():
 
         return Node(
             root = points[median],
+            index = self.points.index(points[median]),
             left = self.kd_tree([points[i] for i in range (0, median)], depth+1),
             right = self.kd_tree([points[i] for i in range (median+1, len(points))], depth+1)
         )
@@ -45,7 +49,7 @@ class KdTree():
 
         #stop condition
         if tree is None:
-           return ((float("inf"),float("inf")), float("inf"))
+           return ((float("inf"),float("inf")), float("inf"), float("inf"))
 
         dim = len(tree.root)
         #find corresponding axis
@@ -60,7 +64,7 @@ class KdTree():
             possible_tree = tree.left
 
         #nearest neighbor and its corresponding distance from the subtree
-        (nearest, best_dist) = self.nearest_neighbor(next_tree, target, best_dist, depth+1)
+        (nearest, nearest_index, best_dist) = self.nearest_neighbor(next_tree, target, best_dist, depth+1)
 
         #find distance from root to target point
         current_distance = self.get_distance(target, tree.root)
@@ -68,21 +72,22 @@ class KdTree():
         if current_distance < best_dist:
             best_dist = current_distance
             nearest = tree.root
+            nearest_index = tree.index
 
         #check if it's possible that a nearest point will be found in the other subtree
         d = (target[x_y] - tree.root[x_y]) ** 2
 
         if d > best_dist:
-            return (nearest, best_dist)
+            return (nearest, nearest_index, best_dist)
 
         #check the other subtree
-        (nearest2, best_dist2) = self.nearest_neighbor(possible_tree, target, best_dist, depth+1)
+        (nearest2, nearest_index2, best_dist2) = self.nearest_neighbor(possible_tree, target, best_dist, depth+1)
 
         #return the best result
         if best_dist2 < best_dist:
-            return (nearest2, best_dist2)
+            return (nearest2, nearest_index2, best_dist2)
 
-        return (nearest, best_dist)
+        return (nearest, nearest_index, best_dist)
 
     def get_distance( self, p1, p2 ):
         sum = 0

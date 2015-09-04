@@ -3,6 +3,7 @@ __author__ = 'Diana'
 import math
 import collections
 import numpy as np
+import sf.kd_tree as kd_tree
 
 #distance between p1 and p2
 def get_distance( p1, p2 ):
@@ -17,12 +18,18 @@ class KNeighborsClassifier():
     x = []
     #target values
     y = []
+    #algorithm
+    algorithm = '';
 
     def __init__(self):
         self.n_neighbors = 1
 
     def __init__(self, n_neighbors):
         self.n_neighbors = n_neighbors
+
+    def __init__(self, n_neighbors, algorithm):
+        self.n_neighbors = n_neighbors
+        self.algorithm = algorithm
 
     def fit(self, x, y):
         self.x = x
@@ -38,10 +45,21 @@ class KNeighborsClassifier():
     #returns the distances and the corresponding indexes
     def kneighbors(self, val):
         indices = []
-        distances = self.distances(val)
-        sorted_indexes = sorted(range(len(distances)), key=lambda k: distances[k])
-        for index in range(0, self.n_neighbors):
-            indices.append(sorted_indexes[index])
+
+        if self.algorithm == 'kd_tree':
+            distances = []
+            tree = kd_tree.KdTree(self.x)
+            kdtree = tree.build_tree()
+            (point, index, distance) = tree.nearest_neighbor(kdtree, val, float("inf"), 0)
+            indices.append(index)
+            distances.append(distance)
+        else:
+            #algorithm = auto
+            distances = self.distances(val)
+            sorted_indexes = sorted(range(len(distances)), key=lambda k: distances[k])
+            for index in range(0, self.n_neighbors):
+                indices.append(sorted_indexes[index])
+
         return np.array(distances), np.array(indices)
 
     #returns the predicted values list for the transmitted value
