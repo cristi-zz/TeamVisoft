@@ -9,7 +9,7 @@ import collections
 import pprint
 import operator
 
-class Node(namedtuple('Node', 'root index left right')):
+class Node(namedtuple('Node', 'root index left right visited')):
     def __repr__(self):
         return pformat(tuple(self))
 
@@ -41,15 +41,16 @@ class KdTree():
         return Node(
             root = points[median],
             index = self.points.index(points[median]),
+            visited = 0,
             left = self.kd_tree([points[i] for i in range (0, median)], depth+1),
             right = self.kd_tree([points[i] for i in range (median+1, len(points))], depth+1)
         )
 
-    def nearest_neighbor(self, tree, target, best_dist, depth):
+    def nearest_neighbor(self, tree, target, best_dist, depth, visited):
 
         #stop condition
         if tree is None:
-           return ((float("inf"),float("inf")), float("inf"), float("inf"))
+           return (None, float("inf"), float("inf"))
 
         dim = len(tree.root)
         #find corresponding axis
@@ -64,14 +65,19 @@ class KdTree():
             possible_tree = tree.left
 
         #nearest neighbor and its corresponding distance from the subtree
-        (nearest, nearest_index, best_dist) = self.nearest_neighbor(next_tree, target, best_dist, depth+1)
+        (nearest, nearest_index, best_dist) = self.nearest_neighbor(next_tree, target, best_dist, depth+1, visited)
 
-        #find distance from root to target point
-        current_distance = self.get_distance(target, tree.root)
+        #check if the root node was visited
+
+        if visited[tree.index] == 0:
+            #find distance from root to target point
+            current_distance = self.get_distance(target, tree.root)
+        else:
+            current_distance = float("inf")
 
         if current_distance < best_dist:
             best_dist = current_distance
-            nearest = tree.root
+            nearest = tree
             nearest_index = tree.index
 
         #check if it's possible that a nearest point will be found in the other subtree
@@ -81,7 +87,7 @@ class KdTree():
             return (nearest, nearest_index, best_dist)
 
         #check the other subtree
-        (nearest2, nearest_index2, best_dist2) = self.nearest_neighbor(possible_tree, target, best_dist, depth+1)
+        (nearest2, nearest_index2, best_dist2) = self.nearest_neighbor(possible_tree, target, best_dist, depth+1, visited)
 
         #return the best result
         if best_dist2 < best_dist:

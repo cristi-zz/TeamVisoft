@@ -12,6 +12,13 @@ def get_distance( p1, p2 ):
      sum += (p2[index] - p1[index]) ** 2
  return math.sqrt(sum)
 
+def get_distinct_elements( list ):
+    distinct_values = []
+    for elem in list:
+        if elem not in distinct_values:
+            distinct_values.append(elem)
+    return distinct_values
+
 class KNeighborsClassifier():
     n_neighbors = 1
     #training data
@@ -45,14 +52,18 @@ class KNeighborsClassifier():
     #returns the distances and the corresponding indexes
     def kneighbors(self, val):
         indices = []
-
+        visited = np.tile(0, (len(self.y)))
         if self.algorithm == 'kd_tree':
             distances = []
             tree = kd_tree.KdTree(self.x)
             kdtree = tree.build_tree()
-            (point, index, distance) = tree.nearest_neighbor(kdtree, val, float("inf"), 0)
-            indices.append(index)
-            distances.append(distance)
+            k = 0
+            while k < self.n_neighbors:
+                (point, index, distance) = tree.nearest_neighbor(kdtree, val, float("inf"), 0, visited)
+                visited[point.index] = 1
+                indices.append(index)
+                distances.append(distance)
+                k = k + 1
         else:
             #algorithm = auto
             distances = self.distances(val)
@@ -88,7 +99,8 @@ class KNeighborsClassifier():
     def predict_proba(self, val):
         predict_proba = []
         #get unique target values
-        target_values = set(self.y)
+        target_values = get_distinct_elements(self.y)
+
         for elem in val:
             predict_proba_aux = []
             distances, indices = self.kneighbors(elem)
