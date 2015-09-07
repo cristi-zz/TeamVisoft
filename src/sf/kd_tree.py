@@ -35,12 +35,18 @@ class KdTree():
         x_y = depth % dim
 
         #sort points by corresponding axis
-        points.sort(key = itemgetter(x_y))
+        points = sorted(points, key=itemgetter(x_y))
         median = len(points) / 2
+
+        median_index = -1
+        for i in range (0, len(self.points)):
+            if points[median][0] == self.points[i][0] and points[median][1] == self.points[i][1]:
+                median_index = i
+                break
 
         return Node(
             root = points[median],
-            index = self.points.index(points[median]),
+            index = median_index,
             visited = 0,
             left = self.kd_tree([points[i] for i in range (0, median)], depth+1),
             right = self.kd_tree([points[i] for i in range (median+1, len(points))], depth+1)
